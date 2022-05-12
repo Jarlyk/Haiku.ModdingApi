@@ -1,0 +1,4 @@
+lib/Game/*.dll
+bin
+.vs
+obj

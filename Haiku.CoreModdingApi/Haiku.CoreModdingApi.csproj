@@ -1,0 +1,37 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Reference Include="Assembly-CSharp">
+      <HintPath>..\lib\Game\Assembly-CSharp.dll</HintPath>
+    </Reference>
+    <Reference Include="BepInEx">
+      <HintPath>..\lib\BepInEx\BepInEx.dll</HintPath>
+    </Reference>
+    <Reference Include="MMHOOK_Assembly-CSharp">
+      <HintPath>..\lib\HookGen\MMHOOK_Assembly-CSharp.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine">
+      <HintPath>..\lib\Game\UnityEngine.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine.CoreModule">
+      <HintPath>..\lib\Game\UnityEngine.CoreModule.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+
+  <Target Name="PreBuild" BeforeTargets="PreBuildEvent">
+    <Exec Command="$(SolutionDir)lib\Publicizer\NStrip -p $(SolutionDir)lib\Game\Assembly-CSharp.dll $(SolutionDir)lib\HookGen\Assembly-CSharp.dll&#xD;&#xA;$(SolutionDir)lib\HookGen\MonoMod.RuntimeDetour.HookGen $(SolutionDir)lib\HookGen\Assembly-CSharp.dll&#xD;&#xA;copy $(SolutionDir)lib\HookGen\Assembly-CSharp.dll $(SolutionDir)bin\Assembly-CSharp.dll" />
+  </Target>
+
+  <Target Name="PostBuild" AfterTargets="PostBuildEvent">
+    <Exec Command="cd $(TargetDir)&#xD;&#xA;$(SolutionDir)\lib\ILRepack.exe /out:$(SolutionDir)bin\Haiku.CoreModdingApi.dll $(TargetDir)Haiku.CoreModdingApi.dll $(TargetDir)MMHook_Assembly-CSharp.dll" />
+  </Target>
+
+</Project>
