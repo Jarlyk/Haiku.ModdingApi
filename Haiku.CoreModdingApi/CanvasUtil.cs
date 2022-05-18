@@ -5,11 +5,12 @@ using JetBrains.Annotations;
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace Haiku.CoreModdingApi
+namespace Modding
 {
-    // Canvas helper Class, mostly from hk-modding API https://github.com/hk-modding/api/blob/master/Assembly-CSharp/CanvasUtil.cs
+    /// Canvas helper Class, mostly from hk-modding API https://github.com/hk-modding/api/blob/master/Assembly-CSharp/CanvasUtil.cs
     public static class CanvasUtil
     {
+        public static Font gameFont;
         /// <summary>
         ///     Creates a base panel for UI elements
         /// </summary>
@@ -88,7 +89,7 @@ namespace Haiku.CoreModdingApi
         ///     Creates a Canvas Element set up to work with Haiku's Screenspace
         /// </summary>
         /// <param name="sortingOrder">The sorting Order of the Canvas</param>
-        /// <returns>GameObject with Raycaster, CanvasScaler and CanvasAspectScaler</returns>
+        /// <returns>GameObject with Canvas, Raycaster, CanvasScaler and CanvasAspectScaler</returns>
         public static GameObject CreateCanvas(int sortingOrder = 0)
         {
             GameObject c = new GameObject();

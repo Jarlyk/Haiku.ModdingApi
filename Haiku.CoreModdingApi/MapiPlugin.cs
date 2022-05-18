@@ -3,33 +3,37 @@ using BepInEx;
 using UnityEngine;
 using BepInEx.Bootstrap;
 using UnityEngine.UI;
+using Modding;
+using System;
 
 namespace Haiku.CoreModdingApi
 {
     [BepInPlugin("haiku.mapi", "Haiku Core Modding API", "1.0.0.0")]
     public sealed class MapiPlugin : BaseUnityPlugin
     {
-
+        GameObject MApiCanvas;
         void Start()
         {
             List<string> pluginsLoaded = new List<string>();
 
             // Remove Steam Name Display and get the font
             GameObject SteamNameDisplay = GameObject.Find("WelcomeText");
-            Font font = SteamNameDisplay.GetComponent<Text>().font;
+            CanvasUtil.gameFont = SteamNameDisplay.GetComponent<Text>().font;
             Destroy(SteamNameDisplay);
 
-            // Disabling Achievements
+            // Hooks
             On.AchievementManager.SetAchievement += onAchievement;
+            On.MainMenuManager.SelectSaveFile += gameStarted;
+            On.MainMenuManager.Start += MainMenuActive;
 
             // MApi settings
             Settings.initSettings(Config);
 
-            // MApi overlay
+            #region Loaded Plugin Overlay
             Logger.LogInfo("Trying to find plugins");
-            foreach (var plugin in Chainloader.PluginInfos)
+            foreach (KeyValuePair<string,PluginInfo> plugin in Chainloader.PluginInfos)
             {
-                var metadata = plugin.Value.Metadata;
+                BepInPlugin metadata = plugin.Value.Metadata;
                 Logger.LogInfo("Plugin found: " + metadata.Name);
                 if (metadata.Name.Equals("Haiku Core Modding API") && pluginsLoaded.Count > 0)
                 {
@@ -42,49 +46,43 @@ namespace Haiku.CoreModdingApi
                     pluginsLoaded.Add(metadata.Name.ToString() + ": " + metadata.Version.ToString());
                 }
             }
+            foreach (string errorInformation in Chainloader.DependencyErrors)
+            {
+                Logger.LogError("Failed to load Plugin: \n" + errorInformation);
+            }
             if (pluginsLoaded.Count == 0)
             {
                 Logger.LogInfo("Couldn't find plugins");
             }
 
-            GameObject MApiHeader = new GameObject();
-            MApiHeader.name = "MApi Header";
-            Canvas MApiCanvas = MApiHeader.AddComponent<Canvas>();
-            MApiCanvas.renderMode = RenderMode.ScreenSpaceOverlay;
+            MApiCanvas = CanvasUtil.CreateCanvas(1);
+            MApiCanvas.name = "MApi Canvas";    
+            DontDestroyOnLoad(MApiCanvas);
 
-            CanvasScaler MApiCanvasScaler = MApiHeader.AddComponent<CanvasScaler>();
-            MApiCanvasScaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
-            MApiCanvasScaler.referencePixelsPerUnit = 16f;
-            MApiCanvasScaler.referenceResolution = new Vector2(384f, 216f);
-            MApiCanvas.sortingOrder = 1;
-
-
-            CanvasAspectScaler MApiCanvasAspectScaler = MApiHeader.AddComponent<CanvasAspectScaler>();
-            MApiHeader.AddComponent<GraphicRaycaster>();
-
-            DontDestroyOnLoad(MApiHeader);
-
-            GameObject MapiPlugins = new GameObject();
-            MapiPlugins.transform.parent = MApiHeader.transform;
-            MapiPlugins.transform.localPosition = new Vector3(10, 103, 0);
-            MapiPlugins.name = "MApi Plugins";
+            GameObject MapiPlugins = CanvasUtil.CreateBasePanel(MApiCanvas, 
+                new CanvasUtil.RectData(new Vector2(0f, 0f), new Vector2(10, -4),new Vector2(0,0),new Vector2(1,2)));
+            MapiPlugins.name = "Mapi Plugin Panel";
             for (int i = 0; i < pluginsLoaded.Count; i++)
             {
-                GameObject textObject = new GameObject();
-                textObject.transform.parent = MapiPlugins.transform;
+                GameObject textObject = CanvasUtil.CreateTextPanel(MapiPlugins, pluginsLoaded[i],4,TextAnchor.MiddleLeft,
+                    new CanvasUtil.RectData(new Vector2(400f, 10f), new Vector2(0, 0 - i * 5)), CanvasUtil.gameFont);
                 textObject.name = $"{pluginsLoaded[i]}";
-                Text text = textObject.AddComponent<Text>();
-                //text.font = Resources.GetBuiltinResource(typeof(Font), "Jaldi.ttf") as Font;
-                text.font = font;
-                text.fontStyle = FontStyle.Bold;
-                text.text = pluginsLoaded[i];
-                text.fontSize = 4;
-
-                // Text position
-                RectTransform rectTransform = text.GetComponent<RectTransform>();
-                rectTransform.localPosition = new Vector3(0, 0 - i * 5, 0);
-                rectTransform.sizeDelta = new Vector2(400, 10);
+                textObject.GetComponent<Text>().fontStyle = FontStyle.Bold;
             }
+            #endregion
+        }
+
+        private void MainMenuActive(On.MainMenuManager.orig_Start orig, MainMenuManager self)
+        {
+            MApiCanvas.SetActive(true);
+            Destroy(GameObject.Find("WelcomeText"));
+            orig(self);
+        }
+
+        private void gameStarted(On.MainMenuManager.orig_SelectSaveFile orig, MainMenuManager self, string saveFilePath)
+        {
+            orig(self, saveFilePath);
+            MApiCanvas.SetActive(false);
         }
 
         #region Hooks
