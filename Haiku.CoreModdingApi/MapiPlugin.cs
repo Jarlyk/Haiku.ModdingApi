@@ -8,7 +8,7 @@ using System;
 
 namespace Haiku.CoreModdingApi
 {
-    [BepInPlugin("haiku.mapi", "Haiku Core Modding API", "1.0.0.0")]
+    [BepInPlugin("haiku.mapi", "Haiku Core Modding API", "1.0.0.1")]
     public sealed class MapiPlugin : BaseUnityPlugin
     {
         GameObject MApiCanvas;
