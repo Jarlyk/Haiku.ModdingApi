@@ -5,7 +5,8 @@ This is the core modding API for the game Haiku, the Robot.  It's designed with 
 
 ### Getting Started with Modding
 For a preliminary introduction to MonoMod modding using BepInEx, see this guide: https://docs.bepinex.dev/master/articles/dev_guide/plugin_tutorial/index.html
-For Haiku in particular, you'll want to reference this modding API to get access to the hooks, as well as the game code to be able to use objects defined in the code.  Depending on the nature of your mod, you may also need to reference one or more Unity assemblies from the game.  More modding information to be documented later, hopefully.
+For Haiku in particular, you'll want to reference this modding API to get access to the hooks, as well as the game code to be able to use objects defined in the code.  Depending on the nature of your mod, you may also need to reference one or more Unity assemblies from the game. Within the NameSpace Modding you'll find CanvasUtil for easier UI creation and a ConfigManagerUtil to assist the creation of Configs for your Mods. See https://github.com/Jarlyk/Haiku.DebugMod for examples.
+More modding information to be documented later, hopefully.
 
 ### Building the API
 This Git repo includes the BepInEx and Monomod dependencies, but does not include the Unity or Haiku Assemblies.  Prior to building, you'll need to copy the necessary files from the Managed folder in your Haiku installation to the lib/Game folder.
