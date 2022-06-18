@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using UnityEngine;
 using System.ComponentModel;
+using Modding;
 
 namespace Haiku.CoreModdingApi
 {
@@ -17,6 +18,7 @@ namespace Haiku.CoreModdingApi
             }
             config.SaveOnConfigSet = true;
             config.SettingChanged += Config_SettingChanged;
+            ConfigManagerUtil.createButton(config, MapiPlugin.toggleAchievements, "MApi", "Toggle Achievements", "Enables or Disables getting Achievements while MApi is loaded");
         }
         #region ResolutionConfigs
         private enum possibleResolutions

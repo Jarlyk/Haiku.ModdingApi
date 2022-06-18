@@ -10,7 +10,29 @@ namespace Modding
     /// Canvas helper Class, mostly from hk-modding API https://github.com/hk-modding/api/blob/master/Assembly-CSharp/CanvasUtil.cs
     public static class CanvasUtil
     {
-        public static Font gameFont;
+        private static Font _gameFont;
+        public static Font GameFont
+        {
+            get
+            {
+                if(!_gameFont) GetGameFont();
+                return _gameFont;
+            }
+        }
+
+        private static void GetGameFont()
+        {
+            foreach (Font f in Resources.FindObjectsOfTypeAll<Font>())
+            {
+                if (f != null && f.name == "Jaldi-Regular")
+                {
+                    _gameFont = f;
+                    return;
+                }
+            }
+            Debug.LogError("GameFont wasn't initialised");
+        }
+
         /// <summary>
         ///     Creates a base panel for UI elements
         /// </summary>
@@ -38,6 +60,8 @@ namespace Modding
         /// <param name="rd">Rectangle Data</param>
         public static void AddRectTransform(GameObject go, RectData rd)
         {
+            // https://docs.unity3d.com/ScriptReference/Rect.html (note that the example pictures are GUI space, for Canvas: 0,0 = bottom left)
+            // Also SizeDelta expands the Rect in both directions, which knowing should explain the pictures better)
             // Create a rectTransform
             // Set the total size of the content
             // all you need to know is, 

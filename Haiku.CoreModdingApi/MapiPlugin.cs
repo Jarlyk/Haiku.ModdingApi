@@ -8,17 +8,21 @@ using System;
 
 namespace Haiku.CoreModdingApi
 {
-    [BepInPlugin("haiku.mapi", "Haiku Core Modding API", "1.0.0.1")]
+    [BepInPlugin("haiku.mapi", "Haiku Core Modding API", "1.0.1.0")]
     public sealed class MapiPlugin : BaseUnityPlugin
     {
-        GameObject MApiCanvas;
+        private GameObject mapiCanvas;
+
+        private static GameObject AchievementsDisabledText;
+        private static bool achievementsDisabled = true;
+
+        private List<string> pluginsLoaded = new List<string>();
+
+
         void Start()
         {
-            List<string> pluginsLoaded = new List<string>();
-
-            // Remove Steam Name Display and get the font
+            // Remove Steam Name Display
             GameObject SteamNameDisplay = GameObject.Find("WelcomeText");
-            CanvasUtil.gameFont = SteamNameDisplay.GetComponent<Text>().font;
             Destroy(SteamNameDisplay);
 
             // Hooks
@@ -31,7 +35,32 @@ namespace Haiku.CoreModdingApi
 
             #region Loaded Plugin Overlay
             Logger.LogInfo("Trying to find plugins");
-            foreach (KeyValuePair<string,PluginInfo> plugin in Chainloader.PluginInfos)
+            getLoadedPlugins();
+
+            mapiCanvas = CanvasUtil.CreateCanvas(1);
+            mapiCanvas.name = "MApi Canvas";
+            mapiCanvas.transform.SetParent(gameObject.transform);
+            Font font = new Font();
+
+            GameObject testCanvas = new GameObject();
+            GameObject testTextPanel = new GameObject();
+
+            displayLoadedPlugins();
+            #endregion
+
+            AchievementsDisabledText = CanvasUtil.CreateTextPanel(mapiCanvas, "Achievements are disabled", 9, TextAnchor.LowerLeft,
+                new CanvasUtil.RectData(new Vector2(0, 0), new Vector2(5, -1), new Vector2(0, 0), new Vector2(1, 1)), CanvasUtil.GameFont);
+        }
+
+        internal static void toggleAchievements()
+        {
+            achievementsDisabled = !achievementsDisabled;
+            AchievementsDisabledText.SetActive(achievementsDisabled);
+        }
+
+        private void getLoadedPlugins()
+        {
+            foreach (KeyValuePair<string, PluginInfo> plugin in Chainloader.PluginInfos)
             {
                 BepInPlugin metadata = plugin.Value.Metadata;
                 Logger.LogInfo("Plugin found: " + metadata.Name);
@@ -54,27 +83,26 @@ namespace Haiku.CoreModdingApi
             {
                 Logger.LogInfo("Couldn't find plugins");
             }
+        }
 
-            MApiCanvas = CanvasUtil.CreateCanvas(1);
-            MApiCanvas.name = "MApi Canvas";    
-            DontDestroyOnLoad(MApiCanvas);
-
-            GameObject MapiPlugins = CanvasUtil.CreateBasePanel(MApiCanvas, 
-                new CanvasUtil.RectData(new Vector2(0f, 0f), new Vector2(10, -4),new Vector2(0,0),new Vector2(1,2)));
+        private void displayLoadedPlugins()
+        {
+            GameObject MapiPlugins = CanvasUtil.CreateBasePanel(mapiCanvas,
+            new CanvasUtil.RectData(new Vector2(0f, 0f), new Vector2(10, -4), new Vector2(0, 0), new Vector2(1, 2)));
             MapiPlugins.name = "Mapi Plugin Panel";
             for (int i = 0; i < pluginsLoaded.Count; i++)
             {
-                GameObject textObject = CanvasUtil.CreateTextPanel(MapiPlugins, pluginsLoaded[i],4,TextAnchor.MiddleLeft,
-                    new CanvasUtil.RectData(new Vector2(400f, 10f), new Vector2(0, 0 - i * 5)), CanvasUtil.gameFont);
+                GameObject textObject = CanvasUtil.CreateTextPanel(MapiPlugins, pluginsLoaded[i], 4, TextAnchor.MiddleLeft,
+                    new CanvasUtil.RectData(new Vector2(400f, 10f), new Vector2(0, 0 - i * 5)), CanvasUtil.GameFont);
                 textObject.name = $"{pluginsLoaded[i]}";
                 textObject.GetComponent<Text>().fontStyle = FontStyle.Bold;
             }
-            #endregion
         }
 
+        #region Hooks
         private void MainMenuActive(On.MainMenuManager.orig_Start orig, MainMenuManager self)
         {
-            MApiCanvas.SetActive(true);
+            mapiCanvas.SetActive(true);
             Destroy(GameObject.Find("WelcomeText"));
             orig(self);
         }
@@ -82,13 +110,17 @@ namespace Haiku.CoreModdingApi
         private void gameStarted(On.MainMenuManager.orig_SelectSaveFile orig, MainMenuManager self, string saveFilePath)
         {
             orig(self, saveFilePath);
-            MApiCanvas.SetActive(false);
+            mapiCanvas.SetActive(false);
         }
 
-        #region Hooks
         private void onAchievement(On.AchievementManager.orig_SetAchievement orig, AchievementManager self, string achievementName)
         {
-            Debug.LogWarning("Tried to get an Achievement while MApi is enabled, passing instead");
+            if (!achievementsDisabled)
+            {
+                orig(self, achievementName);
+                return;
+            }
+            Debug.Log($"Tried to get the Achievement: {achievementName} while Achievements are disabled, passing instead");
         }
         #endregion
     }
