@@ -53,14 +53,17 @@
 		</Reference>
 	</ItemGroup>
 
-	<!--<Target Name="PreBuild" BeforeTargets="PreBuildEvent">
+	<Target Name="PreBuild" BeforeTargets="PreBuildEvent">
 		<Exec Command="$(SolutionDir)lib\Publicizer\NStrip -p $(SolutionDir)lib\Game\Assembly-CSharp.dll $(SolutionDir)lib\HookGen\Assembly-CSharp.dll&#xD;&#xA;$(SolutionDir)lib\HookGen\MonoMod.RuntimeDetour.HookGen $(SolutionDir)lib\HookGen\Assembly-CSharp.dll&#xD;&#xA;copy $(SolutionDir)lib\HookGen\Assembly-CSharp.dll $(SolutionDir)bin\Assembly-CSharp.dll" />
-	</Target>-->
+	</Target>
 
 	<Target Name="PostBuild" AfterTargets="PostBuildEvent">
 		<Exec Command="cd $(TargetDir)&#xD;&#xA;$(SolutionDir)\lib\ILRepack.exe /out:$(SolutionDir)bin\Haiku.CoreModdingApi.dll $(TargetDir)Haiku.CoreModdingApi.dll $(TargetDir)MMHook_Assembly-CSharp.dll" />
 		<Copy SourceFiles="$(SolutionDir)bin\Haiku.CoreModdingApi.dll" DestinationFiles="$(GamePath)\BepInEx\plugins\Modding API\Haiku.CoreModdingApi.dll" />
-		
-		<!--<Copy SourceFiles="$(SolutionDir)bin\Haiku.CoreModdingApi.dll" DestinationFiles="C:\Users\Schy\source\repos\Haiku\Haiku.DebugMod\lib\Haiku.CoreModdingApi.dll" /> -->
+		<Copy SourceFiles="$(SolutionDir)bin\Haiku.CoreModdingApi.dll" DestinationFiles="$(ExportDir)/$(TargetName)\Haiku.CoreModdingApi.dll" />
+		<GetFileHash Files="$(TargetDir)Haiku.CoreModdingApi.dll" Algorithm="SHA256">
+			<Output TaskParameter="Items" ItemName="FilesWithHashes" />
+		</GetFileHash>
+		<WriteLinesToFile File="$(ExportDir)/$(TargetName)/SHA.txt" Lines="$(OutputFileString);@(FilesWithHashes->'%(FileHash)')" Overwrite="true" Encoding="UTF-8" />
 	</Target>
 </Project>
