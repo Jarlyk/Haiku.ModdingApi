@@ -47,7 +47,7 @@
 		<Exec Command="cd $(TargetDir)&#xD;&#xA;$(SolutionDir)\lib\ILRepack.exe /out:$(SolutionDir)bin\Haiku.CoreModdingApi.dll $(TargetDir)Haiku.CoreModdingApi.dll $(TargetDir)MMHook_Assembly-CSharp.dll" />
 		<Copy SourceFiles="$(SolutionDir)bin\Haiku.CoreModdingApi.dll" DestinationFiles="$(GamePath)\BepInEx\plugins\Modding API\Haiku.CoreModdingApi.dll" />
 		<Copy SourceFiles="$(SolutionDir)bin\Haiku.CoreModdingApi.dll" DestinationFiles="$(ExportDir)/$(TargetName)\Haiku.CoreModdingApi.dll" />
-		<GetFileHash Files="$(TargetDir)Haiku.CoreModdingApi.dll" Algorithm="SHA256">
+		<GetFileHash Files="$(SolutionDir)bin\Haiku.CoreModdingApi.dll" Algorithm="SHA256">
 			<Output TaskParameter="Items" ItemName="FilesWithHashes" />
 		</GetFileHash>
 		<WriteLinesToFile File="$(ExportDir)/$(TargetName)/SHA.txt" Lines="$(OutputFileString);@(FilesWithHashes->'%(FileHash)')" Overwrite="true" Encoding="UTF-8" />
